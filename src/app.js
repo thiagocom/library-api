@@ -2,9 +2,10 @@ const express = require("express")
 const mongoose = require("mongoose")
 const logger = require("morgan")
 const rfs = require("rotating-file-stream")
+const cors = require("cors")
 require("dotenv").config()
-const bookRoutes = require("./routes/book-routes")
-const authorRoutes = require("./routes/author-routes")
+const bookRoutes = require("./routes/book.routes")
+const authorRoutes = require("./routes/author.routes")
 
 // App
 const app = express()
@@ -13,6 +14,7 @@ app.set("port", process.env.PORT || 8000)
 // Middlewares
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
+app.use(cors())
 
 if (process.env.NODE_ENV == "production") {
 	const accessLogStream = rfs("app.log", {
@@ -26,10 +28,12 @@ if (process.env.NODE_ENV == "production") {
 
 
 // Connection with moongose
-mongoose.connect(process.env.CONNECT_STRING, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(process.env.CONNECT_STRING,
+	{ useNewUrlParser: true, useUnifiedTopology: true })
 	.catch(err => console.error(err))
 const { connection } = mongoose
 connection.on("error", err => console.error(err))
+mongoose.set("useFindAndModify", false)
 
 // Routes
 app.use("/books", bookRoutes)
